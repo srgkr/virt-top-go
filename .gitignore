@@ -1,0 +1,16 @@
+# Бинарные файлы
+virt-top-go
+virt-top-go-*
+
+# Временные файлы и артефакты
+tmp/
+*.log
+*.tmp
+*.out
+
+# IDE и редакторы
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
