@@ -101,3 +101,57 @@ sudo ./virt-top-go
 # Потоковый режим с повторным выводом каждые 2 секунды 
 ./virt-top-go --stream
 ```
+
+## Команды сбора информации с хоста
+```
+free -h > free_h.txt
+cat /proc/meminfo > proc_meminfo.txt
+cat /proc/vmstat > proc_vmstat.txt
+virsh nodememstats > virsh_nodememstats.txt
+virsh freecell --all > virsh_freecell_all.txt
+vmstat -w > vmstat_w.txt
+vmstat -s > vmstat_s.txt
+sudo virsh list --all > root_virsh_list_all.txt
+sudo virsh domstats > root_virsh_domstats.txt
+
+#получить информацию по каждой ВМ
+sudo virsh list
+sudo virsh dommemstat id/vm_name
+```
+
+## Пример сбора информации (старый вариант)
+```
+#Пример для virsh (может отображать кэшированную информацию)
+for d in $(virsh list --name); do
+  LC_ALL=C virsh dommemstat "$d" --live | awk -v dom="$d" '
+    { m[$1] = $2/1024 }
+    END {
+      base = (m["available"] > 0) ? m["available"] : m["actual"]
+      util = (base > 0) ? (base - m["unused"]) / base * 100 : 0
+      printf "%-20s actual=%9.1f  unused=%9.1f  rss=%9.1f  avail=%9.1f  usable=%9.1f  util=%5.1f%%\n",
+        dom, m["actual"], m["unused"], m["rss"], m["available"], m["usable"], util
+    }'
+done
+
+#вывод вида
+kali-linux           actual=   1024.0  unused=   1654.2  rss=   2349.8  avail=   1969.3  usable=   1674.0  util= 16.0%
+
+#в случае если требуется актуальная информация
+# однократно: включаем опрос у всех машин раз в секунду
+for d in $(virsh list --name); do
+  virsh dommemstat "$d" --live --period 1
+done
+sleep 1
+
+# после этого опрашиваем ВМ
+for d in $(virsh list --name); do
+  LC_ALL=C virsh dommemstat "$d" --live | awk -v dom="$d" '
+    { m[$1] = $2/1024 }
+    END {
+      base = (m["available"] > 0) ? m["available"] : m["actual"]
+      util = (base > 0) ? (base - m["unused"]) / base * 100 : 0
+      printf "%-20s actual=%9.1f  unused=%9.1f  rss=%9.1f  avail=%9.1f  usable=%9.1f  util=%5.1f%%\n",
+        dom, m["actual"], m["unused"], m["rss"], m["available"], m["usable"], util
+    }'
+done
+```
