@@ -727,9 +727,6 @@ func render(l *libvirt.Libvirt, libvirtConnected bool, version string, clearScre
   sumGFreeKB += gFreeVal
   sumIdleRssKB += vm.IdleRssKB
 
-  // Индивидуальный подсчёт потенциального роста каждой ВМ.
-  // Если HOST_RSS превышает лимит из-за оверхеда гипервизора,
-  // потенциальный рост считаем равным 0, не уменьшая общий остаток других ВМ.
   if vm.CurMemKB > vm.RSSKB {
    sumRemainingAllocKB += (vm.CurMemKB - vm.RSSKB)
   }
@@ -771,10 +768,8 @@ func render(l *libvirt.Libvirt, libvirtConnected bool, version string, clearScre
   headroomMaxPct = float64(headroomMaxKB) / float64(total) * 100
  }
 
- // === SUMMARY TABLES ===
  fmt.Println("\n=== SUMMARY (All Active VMs) ===")
 
- // Таблица 1: Общие показатели (Две строки заголовков с обновленными отступами)
  fmt.Println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------")
  fmt.Printf("%-18s %-16s %-10s %-12s %-10s %-10s %-19s %-19s %-16s %-11s %-10s\n",
   "Total", "Total", "Total Host", "Total Host", "KVM RSS", "VBox RSS", "Host Memory", "Host Memory", "Guest", "Guest", "Guest")
@@ -801,7 +796,6 @@ func render(l *libvirt.Libvirt, libvirtConnected bool, version string, clearScre
  )
  fmt.Println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
- // Таблица 2: Прогнозы и Headroom
  fmt.Println("\n=== HOST PROJECTIONS & HEADROOM ===")
  fmt.Println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------")
  fmt.Printf("%-30s %-28s %-38s %-42s\n",
@@ -819,7 +813,6 @@ func render(l *libvirt.Libvirt, libvirtConnected bool, version string, clearScre
   valHostPotAvail, valReclaimed, valHeadroomAlloc, valHeadroomMax)
  fmt.Println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------")
 
- // === ACTIVE VIRTUAL MACHINES LIST ===
  fmt.Println("\n=== ACTIVE VIRTUAL MACHINES LIST ===")
  fmt.Println("-----------------------------------------------------------------------------------------------------------------------------------------------------------------")
  fmt.Printf("%-7s %-9s %-3s %-20s %-5s %-12s %-12s %-12s %-12s %-12s %-12s %-12s %-12s\n",
